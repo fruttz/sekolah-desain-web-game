@@ -1,0 +1,56 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+body{
+    background: white;
+}
+
+#game{
+    width: 700px;
+    height: 800px;
+    border: 1px solid black;
+    margin: auto;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+#block{
+    width: 60px;
+    height: 800px;
+    position: relative;
+    left: 640px;
+    background-color: black;
+    animation: blockanimation 2s infinite linear;
+    
+}
+
+#hole{
+    width: 60px;
+    height: 240px;
+    position: relative;
+    background-color: red;
+    left: 640px;
+    top: -800px;
+    animation: blockanimation 2s infinite linear;
+    
+}
+
+@keyframes blockanimation {
+    0%{left: 640px}
+    100%{left: -250px}
+}
+
+#player{
+    width: 40px;
+    height: 40px;
+    background-color: blue;
+    position: absolute;
+    top: 160px;
+    border-radius: 50%;
+}
+
+
+
