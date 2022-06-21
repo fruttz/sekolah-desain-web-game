@@ -1,10 +1,13 @@
 window.addEventListener('load', function(){
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-    canvas.width = 800;
-    canvas.height = 720;
-    let coins = [];
+    canvas.width = 1080;
+    canvas.height = 1920;
+    let obstacles = [];
     let score = 0;
+    let gameInitialState = true;
+    let gameOver = false;
+
 
     class Player {
         constructor(gameWidth, gameHeight){
@@ -13,8 +16,8 @@ window.addEventListener('load', function(){
             this.width = 100;
             this.height = 100;
             this.x = 20;
-            this.y = this.gameHeight - this.height;
-            this.speed = 0;
+            this.y = this.gameHeight/2;
+            this.speed = 10;
         }
         draw(context){
             context.fillStyle = 'black';
@@ -23,50 +26,62 @@ window.addEventListener('load', function(){
         }
         update(input){
             //movement
-            this.y += this.speed;
-            if (input.keys.indexOf('s') > -1){
-                this.speed = 12;
-            } else if (input.keys.indexOf('w') > -1){
-                this.speed = -12;
+            if (!gameInitialState) this.y += this.speed;
+
+            if ((input.keys.indexOf('w') > -1) || (input.keys.indexOf('touch') > -1)){
+                this.speed = -20;
             } else {
-                this.speed = 0;
+                this.speed = 18
             }
 
             //boundaries
             if (this.y < 0) this.y = 0;
-            else if (this.y > this.gameHeight - this.height) this.y = this.gameHeight - this.height;
+            else if (this.y > this.gameHeight - this.height) {
+                this.y = this.gameHeight - this.height;
+                gameOver = true;
+            }
+        }
+
+        reset(){
+            this.x = 20;
+            this.y = this.gameHeight/2;
         }
 
     }
 
-    class Coin {
+    class Obstacle {
         constructor(gameWidth, gameHeight){
             this.gameWidth = gameWidth;
             this.gameHeight = gameHeight;
-            this.width = 30;
-            this.height = 30;
+            this.top = (Math.random() * this.gameHeight/3) + 200;
+            this.bottom = (Math.random() * this.gameHeight/3) + 200;
+            this.width = 100;
             this.x = this.gameWidth;
-            this.y = (Math.random() * 740) + this.height;
             this.markedForDelete = false;
         }
+
         draw(context){
-            context.fillStyle = "gold";
-            context.fillRect(this.x, this.y, this.width, this.height);
+            context.fillStyle = "red";
+            context.fillRect(this.x, 0, this.width, this.top);
+            context.fillRect(this.x, this.gameHeight - this.bottom, this.width, this.bottom);
         }
         update(player){
             //move
-            this.x -= 5;
+            this.x -= 10;
 
-            //delete after passing boundary
-            if (this.x < 0 - this.width) this.markedForDelete = true;
+            //delete after passing boundary and add score
+            if (this.x < 0 - this.width) {
+                score++;
+                this.markedForDelete = true;
+            }
 
             //collision detection
-            if (player.x + player.width >= this.x && 
-                player.x <= this.x + this.width &&
-                player.y + player.height >= this.y &&
-                player.y <= this.y + this.height){
-                this.markedForDelete = true;
-                score++;
+            if (player.x < this.x + this.width &&
+                player.x + player.width > this.x &&
+                ((player.y < 0 + this.top && player.y + player.height) || 
+                player.y > this.gameHeight - this.bottom && 
+                player.y + player.height < this.gameHeight)){
+                    gameOver = true;
                 }
         }
     }
@@ -74,13 +89,17 @@ window.addEventListener('load', function(){
     class InputHandler {
         constructor(){
             this.keys = [];
+
+            //key controls
             window.addEventListener('keydown', e => {
                 if ((e.key === "w" || 
                      e.key === "a" || 
                      e.key === "s" || 
                      e.key === "d") 
                     && this.keys.indexOf(e.key) === -1){
-                    this.keys.push(e.key);
+                        gameInitialState = false;
+                        this.keys.push(e.key);
+                        if (gameOver) restartGame()
                 }
             });
             window.addEventListener('keyup', e => {
@@ -88,50 +107,93 @@ window.addEventListener('load', function(){
                      e.key === "a" || 
                      e.key === "s" || 
                      e.key === "d") ){
-                    this.keys.splice(this.keys.indexOf(e.key), 1);
+                        this.keys.splice(this.keys.indexOf(e.key), 1);
                 }
             });
+
+            //touch controls
+            window.addEventListener('touchstart', e => {
+                gameInitialState = false;
+                if (this.keys.indexOf('touch') === -1) {
+                    this.keys.push('touch');
+                    if (gameOver) restartGame();
+                }
+            });
+            window.addEventListener('touchend', e => {
+                this.keys.splice(this.keys.indexOf('touch', -1));
+            });
+
+            
         }   
     }
     
-    function coinSpawn(deltaTime){
-        if (coinTimer > coinInterval){
-            coins.push(new Coin(canvas.width, canvas.height));
-            coinTimer = 0;
+     function spawnObstacle(deltaTime){
+        if (obstacleTimer > obstacleInterval){
+            obstacles.push(new Obstacle(canvas.width, canvas.height));
+            obstacleTimer = 0;
         } else {
-            coinTimer += deltaTime;
+            obstacleTimer += deltaTime;
         }
-        coins.forEach(coin => {
-            coin.draw(ctx);
-            coin.update(player);
+        obstacles.forEach(obstacle => {
+            obstacle.draw(ctx);
+            obstacle.update(player);
         });
-        coins = coins.filter(coin => !coin.markedForDelete);
+        obstacles = obstacles.filter(obstacle => !obstacle.markedForDelete);
 
     }
 
-    function displayScore(context){
+    function displayText(context){
+        //score text
+        context.textAlign = "left";
         context.fillStyle = "black";
-        context.font = "40px Monsterrat";
+        context.font = "bold 40px Monsterrat";
         context.fillText("Score: " + score, 20, 50);
+
+        //initial game text
+        if(gameInitialState){
+            context.textAlign = "center";
+            context.fillStyle = "black";
+            context.font = "bold 70px Monsterrat";
+            context.fillText("TOUCH ANYWHERE TO START", canvas.width/2, 200);
+        }
+
+        //game over text
+        if (gameOver){
+            context.textAlign = "center";
+            context.fillStyle = "black";
+            context.font = "bold 70px Monsterrat";
+            context.fillText("GAME OVER", canvas.width/2, 200);
+            context.fillText("TOUCH TO RESTART", canvas.width/2, 270);
+        }
+    }
+
+    function restartGame(){
+        player.reset();
+        obstacles = [];
+        score = 0;
+        gameInitialState = true;
+        gameOver = false;
+        animate(0);
+
     }
 
 
     //MAIN GAME
     const input = new InputHandler();
-    const player = new Player(canvas.width, canvas.height); 
+    const player = new Player(canvas.width, canvas.height);
     let lastTime = 0;
-    let coinTimer = 0;
-    let coinInterval = 500;
+    let obstacleTimer = 0;
+    let obstacleInterval = 300;
 
     function animate(timeStamp){
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
         ctx.clearRect(0,0,canvas.width, canvas.height);
         player.draw(ctx);
-        player.update(input, coins);
-        coinSpawn(deltaTime);
-        displayScore(ctx);
-        requestAnimationFrame(animate);
+        player.update(input);
+        if (!gameInitialState) spawnObstacle(deltaTime);
+        displayText(ctx);
+        if (!gameOver) requestAnimationFrame(animate);
 
     }
     animate(0);
