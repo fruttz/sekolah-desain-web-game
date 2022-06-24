@@ -6,7 +6,10 @@ window.addEventListener('load', function() {
     const scale = 20;
     const rows = canvas.height / scale;
     const columns = canvas.width / scale;
-    const gameSpeed = 1;
+    const gameSpeed = 4;
+    let score = 0;
+    let gameInitialState = true;
+    let gameOver = false;
 
     class Snake {
         constructor(gameWidth, gameHeight){
@@ -18,9 +21,7 @@ window.addEventListener('load', function() {
             this.height = scale;
             this.speedX = 0;
             this.speedY = 0;
-            this.tails = [
-                {tailX: this.gameWidth+scale, tailY: this.gameHeight+scale}
-            ];
+            this.tails = [];
             this.totalTail = 0;
             this.currentDirection = "";
         }
@@ -42,8 +43,11 @@ window.addEventListener('load', function() {
                 this.tails[i] = this.tails[i + 1];
             }
             this.tails[this.totalTail - 1] = {tailX: this.headX, tailY: this.headY};
-            this.headX += this.speedX * scale;
-            this.headY += this.speedY * scale;
+
+            if (!gameInitialState){
+                this.headX += this.speedX ;
+                this.headY += this.speedY ;
+            }
             
             if (input.keys.indexOf('w') > -1 && this.curentDirection != "down"){
                 this.speedX = 0;
@@ -66,11 +70,25 @@ window.addEventListener('load', function() {
             //COLLISION DETECTION
 
             //collision with canvas boundary
-            if (this.headX >= (this.gameWidth - this.width) || this.headX < 0 || this.headY >=  (this.gameHeight - this.height) || this.headY < 0){
-                this.speedX = 0;
-                this.speedY = 0;
+            if (this.headX >= (this.gameWidth - this.width) || this.headX < 0 || this.headY >= (this.gameHeight - this.height) || this.headY < 0){
+                gameOver = true;
             }
 
+            //collision with tail
+            for (var i = 0; i < this.tails.length; i++){
+                if (Math.floor(this.headX) == Math.floor(this.tails[i].tailX) && Math.floor(this.headY) == Math.floor(this.tails[i].tailY)) {
+                    gameOver = true;
+                } 
+            }
+        }
+        reset(){
+            this.headX = 100;
+            this.headY = this.gameHeight/2;
+            this.speedX = 0;
+            this.speedY = 0;
+            this.tails = [];
+            this.totalTail = 0;
+            this.currentDirection = "";
         }
 
     }
@@ -91,11 +109,16 @@ window.addEventListener('load', function() {
             context.fillRect(this.x, this.y, this.width, this.height);
         }
         update(player){
-            if(player.headX + player.width >= this.x && 
+            //check if snake touches fruit
+            if (player.headX + player.width >= this.x && 
                 player.headX <= this.x + this.width &&
                 player.headY + player.height >= this.y &&
                 player.headY <= this.y + this.height){
-                    player.totalTail ++;
+                    for (var i = 0; i < 10; i++){
+                        player.tails.unshift({tailX: player.headX, tailY: player.headY});
+                        player.totalTail ++;
+                    }
+                    score ++; 
                     this.x = Math.floor((Math.random() * (this.max - this.min) + this.min) * scale);
                     this.y = Math.floor((Math.random() * (this.max - this.min) + this.min) * scale);
             }
@@ -114,7 +137,9 @@ window.addEventListener('load', function() {
                      e.key === "s" || 
                      e.key === "d") 
                     && this.keys.indexOf(e.key) === -1){
+                        gameInitialState = false;
                         this.keys.push(e.key);
+                        if (gameOver) restartGame();
                 }
             });
             window.addEventListener('keyup', e => {
@@ -125,13 +150,41 @@ window.addEventListener('load', function() {
                         this.keys.splice(this.keys.indexOf(e.key), 1);
                 }
             });
-            
-
         }
+    }
+
+    function restartGame(){
+        snake.reset();
+        score = 0;
+        gameInitialState = true;
+        gameOver = false;
+        animate(0);
 
     }
 
     function displayText(context){
+        //score text
+        context.textAlign = "left";
+        context.fillStyle = "black";
+        context.font = "bold 16px Monsterrat";
+        context.fillText("Score: " + score, 20, 50);
+
+        //initial game text
+        if(gameInitialState){
+            context.textAlign = "center";
+            context.fillStyle = "black";
+            context.font = "bold 20px Monsterrat";
+            context.fillText("TOUCH ANYWHERE TO START", canvas.width/2, 200);
+        }
+
+        //game over text
+        if (gameOver){
+            context.textAlign = "center";
+            context.fillStyle = "black";
+            context.font = "bold 20px Monsterrat";
+            context.fillText("GAME OVER", canvas.width/2, 200);
+            context.fillText("TOUCH TO RESTART", canvas.width/2, 220);
+        }
 
     }
 
@@ -142,15 +195,14 @@ window.addEventListener('load', function() {
 
     function animate(){
         ctx.clearRect(0,0,canvas.width, canvas.height);
-        fruit.draw(ctx);
+        if (!gameInitialState) fruit.draw(ctx);
         fruit.update(snake);
         snake.draw(ctx);
         snake.update(input);
+        displayText(ctx);
+        if (!gameOver) requestAnimationFrame(animate);
     }
 
-    this.setInterval(animate, 1000/10)
-
-
-
+    animate();
 
 });
