@@ -3,6 +3,9 @@ window.addEventListener('load', function(){
     const ctx = canvas.getContext('2d');
     canvas.width = 1080;
     canvas.height = 1920;
+    let gameInitialState = true;
+    let gameOver = false;
+    let score = 0
 
 
     class Player {
@@ -23,13 +26,18 @@ window.addEventListener('load', function(){
             //movement
             this.x += this.speed;
 
-            if (input.keys.indexOf('d') > -1) this.speed = 12;
-            else if (input.keys.indexOf('a') > -1) this.speed = -12; 
+            if (input.keys.indexOf('d') > -1 || input.keys.indexOf('swipe right') > -1) this.speed = 12;
+            else if (input.keys.indexOf('a') > -1 || input.keys.indexOf('swipe left') > -1) this.speed = -12; 
             else this.speed = 0;
 
             //boundaries
             if (this.x < 0) this.x = 0;
             else if (this.x > this.gameWidth - this.width) this.x = this.gameWidth - this.width;
+        }
+        reset(){
+            this.x = (this.gameWidth / 2) - (this.width / 2);
+            this.y = (this.gameHeight - this.height) - 50;
+            this.speed = 0;
         }
     }
 
@@ -42,7 +50,7 @@ window.addEventListener('load', function(){
             this.x = player.x + player.width / 2;
             this.y = player.y;
             this.speed = 30;
-            this.damage = 50;
+            this.damage = 100;
             this.delete = false;
         }
         draw(context){
@@ -59,7 +67,7 @@ window.addEventListener('load', function(){
         }
     }
 
-    let hpArray = [50, 100, 150, 200, 250];
+    let hpArray = [100, 200, 300, 400, 500];
     class Asteroid {
         constructor(gameWidth, gameHeight, hpArray){
             this.gameWidth = gameWidth;
@@ -76,7 +84,7 @@ window.addEventListener('load', function(){
             context.fillStyle = 'blue';
             context.fillRect(this.x, this.y, this.width, this.height);
         }
-        update(projectiles){
+        update(player, projectiles){
             //move
             this.y += this.speed;
 
@@ -92,9 +100,21 @@ window.addEventListener('load', function(){
                         this.height = this.hitpoint;
                     }
                 }
-            
+
             //delete if hitpoint reaches 0
-            if (this.hitpoint === 0) this.delete = true;
+            if (this.hitpoint === 0) {
+                this.delete = true;
+                score += 10;
+            }
+            
+            //player collision
+            if (player.x + player.width >= this.x &&
+                player.x <= this.x + this.width &&
+                player.y + player.height >= this.y &&
+                player.y <= this.y + this.height) {
+                    gameOver = true;
+                }
+            
 
             //delete after passing boundary
             if (this.y > this.gameHeight + this.height) this.delete = true;
@@ -107,6 +127,8 @@ window.addEventListener('load', function(){
     class InputHandler {
         constructor(){
             this.keys = [];
+            this.touchTreshold = 20;
+            this.touchX = '';
 
             //key controls
             window.addEventListener('keydown', e => {
@@ -115,7 +137,9 @@ window.addEventListener('load', function(){
                      e.key === "s" || 
                      e.key === "d") 
                     && this.keys.indexOf(e.key) === -1){
+                        gameInitialState = false;
                         this.keys.push(e.key);
+                        if (gameOver) restartGame();
                 }
             });
             window.addEventListener('keyup', e => {
@@ -126,6 +150,31 @@ window.addEventListener('load', function(){
                         this.keys.splice(this.keys.indexOf(e.key), 1);
                 }
             });
+
+            //touch controls
+            window.addEventListener('touchstart', e => {
+                gameInitialState = false;
+                this.touchX = e.changedTouches[0].pageX;
+                if (gameOver) restartGame();
+            });
+            window.addEventListener('touchmove', e => {
+                const swipeDistance = e.changedTouches[0].pageX - this.touchX;
+
+                //swipe left or right
+                if ((swipeDistance < -this.touchTreshold) && this.keys.indexOf('swipe left') === -1){ 
+                    this.keys.splice(0,this.keys.length);
+                    this.keys.push('swipe left');
+                }
+                else if ((swipeDistance > this.touchTreshold) && this.keys.indexOf('swipe right') === -1){
+                    this.keys.splice(0,this.keys.length);
+                    this.keys.push('swipe right');
+                }
+            });
+            window.addEventListener('touchend', e => {
+                this.keys.splice(this.keys.indexOf('swipe right'), 1);
+                this.keys.splice(this.keys.indexOf('swipe left'), 1);
+            });
+
         }
     }
 
@@ -159,9 +208,44 @@ window.addEventListener('load', function(){
         }
         asteroids.forEach(asteroid => {
             asteroid.draw(ctx);
-            asteroid.update(projectiles);
+            asteroid.update(player, projectiles);
         });
         asteroids = asteroids.filter(asteroid => !asteroid.delete);
+    }
+
+    function displayText(context){
+        //score text
+        context.textAlign = "left";
+        context.fillStyle = "white";
+        context.font = "bold 40px Monsterrat";
+        context.fillText("Score: " + score, 20, 50);
+
+        //initial game text
+        if(gameInitialState){
+            context.textAlign = "center";
+            context.fillStyle = "white";
+            context.font = "bold 70px Monsterrat";
+            context.fillText("TOUCH ANYWHERE TO START", canvas.width/2, 200);
+        }
+
+        //game over text
+        if (gameOver){
+            context.textAlign = "center";
+            context.fillStyle = "white";
+            context.font = "bold 70px Monsterrat";
+            context.fillText("GAME OVER", canvas.width/2, 200);
+            context.fillText("TOUCH TO RESTART", canvas.width/2, 270);
+        }
+    }
+
+    function restartGame(){
+        player.reset();
+        asteroids = [];
+        projectiles = [];
+        score = 0;
+        gameInitialState = true;
+        gameOver = false;
+        animate(0);
     }
 
     //MAIN GAME
@@ -176,9 +260,12 @@ window.addEventListener('load', function(){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         player.draw(ctx);
         player.update(input);
-        shootProjectiles(deltaTime);
-        spawnAsteroid(deltaTime);
-        requestAnimationFrame(animate)
+        if (!gameInitialState) {
+            shootProjectiles(deltaTime);
+            spawnAsteroid(deltaTime);
+        }
+        displayText(ctx);
+        if (!gameOver) requestAnimationFrame(animate)
     }
 
     animate(0);
