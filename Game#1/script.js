@@ -28,7 +28,7 @@ window.addEventListener('load', function(){
             //movement
             if (!gameInitialState) this.y += this.speed;
 
-            if ((input.keys.indexOf('w') > -1) || (input.keys.indexOf('touch') > -1)){
+            if ((input.keys.indexOf('click') > -1) || (input.keys.indexOf('touch') > -1)){
                 this.speed = -20;
             } else {
                 this.speed = 18
@@ -78,9 +78,9 @@ window.addEventListener('load', function(){
             //collision detection
             if (player.x < this.x + this.width &&
                 player.x + player.width > this.x &&
-                ((player.y < 0 + this.top && player.y + player.height) || 
-                player.y > this.gameHeight - this.bottom && 
-                player.y + player.height < this.gameHeight)){
+                ((player.y < 0 + this.top && player.y + player.height > 0) || 
+                (player.y > this.gameHeight - this.bottom && 
+                player.y + player.height < this.gameHeight))){
                     gameOver = true;
                 }
         }
@@ -90,25 +90,17 @@ window.addEventListener('load', function(){
         constructor(){
             this.keys = [];
 
-            //key controls
-            window.addEventListener('keydown', e => {
-                if ((e.key === "w" || 
-                     e.key === "a" || 
-                     e.key === "s" || 
-                     e.key === "d") 
-                    && this.keys.indexOf(e.key) === -1){
-                        gameInitialState = false;
-                        this.keys.push(e.key);
-                        if (gameOver) restartGame()
+            //mouse controls
+            window.addEventListener('mousedown', e => {
+                gameInitialState = false;
+                if (this.keys.indexOf('click') === -1){
+                    this.keys.push('click');
+                    if (gameOver) restartGame();
                 }
             });
-            window.addEventListener('keyup', e => {
-                if ((e.key === "w" || 
-                     e.key === "a" || 
-                     e.key === "s" || 
-                     e.key === "d") ){
-                        this.keys.splice(this.keys.indexOf(e.key), 1);
-                }
+
+            window.addEventListener('mouseup', e => {
+                this.keys.splice(this.keys.indexOf('click'), 1)
             });
 
             //touch controls
@@ -120,7 +112,7 @@ window.addEventListener('load', function(){
                 }
             });
             window.addEventListener('touchend', e => {
-                this.keys.splice(this.keys.indexOf('touch', -1));
+                this.keys.splice(this.keys.indexOf('touch', 1));
             });
 
             

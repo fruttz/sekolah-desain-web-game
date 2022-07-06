@@ -26,8 +26,8 @@ window.addEventListener('load', function(){
             //movement
             this.x += this.speed;
 
-            if (input.keys.indexOf('d') > -1 || input.keys.indexOf('swipe right') > -1) this.speed = 12;
-            else if (input.keys.indexOf('a') > -1 || input.keys.indexOf('swipe left') > -1) this.speed = -12; 
+            if (input.keys.indexOf('swipe right') > -1) this.speed = 12;
+            else if (input.keys.indexOf('swipe left') > -1) this.speed = -12; 
             else this.speed = 0;
 
             //boundaries
@@ -127,28 +127,39 @@ window.addEventListener('load', function(){
     class InputHandler {
         constructor(){
             this.keys = [];
-            this.touchTreshold = 20;
+            this.swipeTreshold = 20;
             this.touchX = '';
+            this.clickX = '';
+            this.isClicked = false;
 
-            //key controls
-            window.addEventListener('keydown', e => {
-                if ((e.key === "w" || 
-                     e.key === "a" || 
-                     e.key === "s" || 
-                     e.key === "d") 
-                    && this.keys.indexOf(e.key) === -1){
-                        gameInitialState = false;
-                        this.keys.push(e.key);
-                        if (gameOver) restartGame();
+            //mouse controls
+            window.addEventListener('mousedown', e => {
+                gameInitialState = false;
+                this.isClicked = true;
+                this.clickX = e.pageX
+            });
+            window.addEventListener('mousemove', e => {
+                if (!this.isClicked) return;
+                else {
+                    const mouseSwipeDistance = e.pageX - this.clickX;
+                    this.swipeTreshold = 30;
+                    
+                    //swipe left or right
+                    if ((mouseSwipeDistance < -this.swipeTreshold) && (this.keys.indexOf('swipe left') === -1)){
+                        this.keys.splice(0,this.keys.length);
+                        this.keys.push('swipe left');
+                        
+                    }
+                    else if ((mouseSwipeDistance > this.swipeTreshold) && (this.keys.indexOf('swipe right') === -1)){
+                        this.keys.splice(0,this.keys.length);
+                        this.keys.push('swipe right');
+                    }
                 }
             });
-            window.addEventListener('keyup', e => {
-                if ((e.key === "w" || 
-                     e.key === "a" || 
-                     e.key === "s" || 
-                     e.key === "d") ){
-                        this.keys.splice(this.keys.indexOf(e.key), 1);
-                }
+            window.addEventListener('mouseup', e => {
+                this.isClicked = false;
+                this.keys.splice(this.keys.indexOf('swipe right'), 1);
+                this.keys.splice(this.keys.indexOf('swipe left'), 1);
             });
 
             //touch controls
@@ -158,14 +169,14 @@ window.addEventListener('load', function(){
                 if (gameOver) restartGame();
             });
             window.addEventListener('touchmove', e => {
-                const swipeDistance = e.changedTouches[0].pageX - this.touchX;
+                const touchSwipeDistance = e.changedTouches[0].pageX - this.touchX;
 
                 //swipe left or right
-                if ((swipeDistance < -this.touchTreshold) && this.keys.indexOf('swipe left') === -1){ 
+                if ((touchSwipeDistance < -this.swipeTreshold) && (this.keys.indexOf('swipe left') === -1)){ 
                     this.keys.splice(0,this.keys.length);
                     this.keys.push('swipe left');
                 }
-                else if ((swipeDistance > this.touchTreshold) && this.keys.indexOf('swipe right') === -1){
+                else if ((touchSwipeDistance > this.swipeTreshold) && (this.keys.indexOf('swipe right') === -1)){
                     this.keys.splice(0,this.keys.length);
                     this.keys.push('swipe right');
                 }
