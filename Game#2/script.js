@@ -1,252 +1,175 @@
-window.addEventListener('load', function() {
+window.addEventListener('load', function(){
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-    canvas.width = 500;
-    canvas.height= 500;
-    const scale = 20;
-    const rows = canvas.height / scale;
-    const columns = canvas.width / scale;
-    const gameSpeed = 4;
-    let score = 0;
-    let gameInitialState = true;
-    let gameOver = false;
+    canvas.width = 1080;
+    canvas.height = 1920;
 
-    class Snake {
-        constructor(gameWidth, gameHeight){
-            this.gameHeight = gameHeight;
-            this.gameWidth = gameWidth;
-            this.headX = 100;
-            this.headY = this.gameHeight/2;
-            this.width = scale;
-            this.height = scale;
-            this.speedX = 0;
-            this.speedY = 0;
-            this.tails = [];
-            this.totalTail = 0;
-            this.currentDirection = "";
+    //PLAYER
+    var playerHeight = 50;
+    var playerWidth = 300;
+    var playerX = (canvas.width - playerWidth)/2;
+    var playerY = (canvas.height - playerHeight) - 50;
+    var playerSpeed = 0;
+    
+    function drawPlayer(){
+        ctx.fillStyle = "#0095DD";
+        ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
+    }
+
+    //BALL
+    var ballRadius = 50;
+    var ballX = playerX + playerWidth / 2;
+    var ballY = playerY - ballRadius;
+    var ballSpeedX = 10;
+    var ballSpeedY = -10;
+
+    function drawBall(){
+        ctx.beginPath();
+        ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
+        ctx.fillStyle = "#0095DD";
+        ctx.fill();
+    }
+
+    //BRICKS
+    var brickRow = 5;
+    var brickColumn = 30;
+    var brickWidth = 200;
+    var brickHeight = 50;
+    var brickPadding = 10;
+    var brickTop = (-canvas.height) + (brickHeight * 5);
+    var brickLeft = 25;
+    var brickSpeed = 0.25;
+    var bricks = [];
+
+    for (var col = 0; col < brickColumn; col++){
+        bricks[col] = [];
+        for (var row = 0; row < brickRow; row++){
+            bricks[col][row] = { x: 0, y: 0, delete: false};
         }
-        draw(context){
-            //head
-            context.fillStyle = "green";
-            context.fillRect(this.headX, this.headY, this.width, this.height);
+    }
 
-            //tails
-            for (var i = 0; i < this.tails.length; i++){
-                context.fillStyle = "green";
-                context.fillRect(this.tails[i].tailX, this.tails[i].tailY, scale, scale);
+    function drawBricks(){
+        for (var col = 0; col < brickColumn; col++){
+            for (var row = 0; row < brickRow; row++){
+                if (!bricks[col][row].delete) {
+                    var brickX = (row * (brickWidth + brickPadding)) + brickLeft;
+                    var brickY = (col * (brickHeight + brickPadding)) + brickTop;
+                    bricks[col][row].x = brickX;
+                    bricks[col][row].y = brickY;
+                    ctx.fillStyle = "#0095DD";
+                    ctx.fillRect(bricks[col][row].x, bricks[col][row].y, brickWidth, brickHeight);
+                }
             }
+        }
+    }
+
+    function collisionDetection() {
+        for (var col = 0; col < brickColumn; col++){
+            for (var row = 0; row < brickRow; row++){
+                var b = bricks[col][row];
+                if (b.delete == false && ballX > b.x && ballX < b.x + brickWidth && ballY > b.y && ballY < b.y + brickHeight){
+                    ballSpeedY = -ballSpeedY;
+                    b.delete = true;
+                }
+            }
+        }
+    }
+
+
+    //INPUT HANDLER
+    var keys = [];
+    var swipeTreshold = 20;
+    var touchX = '';
+    var clickX = '';
+    var isClicked = false;
+
+    //mouse controls
+    window.addEventListener('mousedown', e => {
+        isClicked = true;
+        clickX = e.pageX;
+    });
+    window.addEventListener('mouseover', e => {
+        if(!isClicked) return;
+        else {
+            const mouseSwipeDistance = e.pageX - clickX;
             
-        }
-        update(input){
-            //MOVEMENT
-            for (var i =  0 ; i < this.tails.length - 1;  i++){
-                this.tails[i] = this.tails[i + 1];
-            }
-            this.tails[this.totalTail - 1] = {tailX: this.headX, tailY: this.headY};
-
-            if (!gameInitialState){
-                this.headX += this.speedX ;
-                this.headY += this.speedY ;
-            }
-            
-            if ((input.keys.indexOf('w') > -1 || input.keys.indexOf('swipe up') > -1) && this.curentDirection != "down"){
-                this.speedX = 0;
-                this.speedY = -gameSpeed;
-                this.curentDirection = "up";
-            } else if ((input.keys.indexOf('s') > -1 || input.keys.indexOf('swipe down') > -1) && this.curentDirection != "up"){
-                this.speedX = 0;
-                this.speedY = gameSpeed;
-                this.curentDirection = "down";
-            } else if ((input.keys.indexOf('a') > -1 || input.keys.indexOf('swipe left') > -1) && this.curentDirection != "right"){
-                this.speedX = -gameSpeed;
-                this.speedY = 0;
-                this.curentDirection = "left";
-            } else if ((input.keys.indexOf('d') > -1 || input.keys.indexOf('swipe right') > -1) && this.curentDirection != "left"){
-                this.speedX = gameSpeed;
-                this.speedY = 0;
-                this.curentDirection = "right";
-            }
-
-            //COLLISION DETECTION
-
-            //collision with canvas boundary
-            if (this.headX >= (this.gameWidth - this.width) || this.headX < 0 || this.headY >= (this.gameHeight - this.height) || this.headY < 0){
-                gameOver = true;
-            }
-
-            //collision with tail
-            for (var i = 0; i < this.tails.length; i++){
-                if (Math.floor(this.headX) == Math.floor(this.tails[i].tailX) && Math.floor(this.headY) == Math.floor(this.tails[i].tailY)) {
-                    gameOver = true;
-                } 
-            }
-        }
-        reset(){
-            this.headX = 100;
-            this.headY = this.gameHeight/2;
-            this.speedX = 0;
-            this.speedY = 0;
-            this.tails = [];
-            this.totalTail = 0;
-            this.currentDirection = "";
-        }
-
-    }
-
-    class Fruit {
-        constructor(gameWidth, gameHeight){
-            this.gameWidth = gameWidth;
-            this.gameHeight = gameHeight;
-            this.width = scale;
-            this.height = scale;
-            this.min = scale/10;
-            this.max = rows - this.min;
-            this.x = Math.floor((Math.random() * (this.max - this.min) + this.min) * scale);
-            this.y = Math.floor((Math.random() * (this.max - this.min) + this.min) * scale);
-        }
-        draw(context){
-            context.fillStyle = "red";
-            context.fillRect(this.x, this.y, this.width, this.height);
-        }
-        update(player){
-            //check if snake touches fruit
-            if (player.headX + player.width >= this.x && 
-                player.headX <= this.x + this.width &&
-                player.headY + player.height >= this.y &&
-                player.headY <= this.y + this.height){
-                    for (var i = 0; i < 10; i++){
-                        player.tails.unshift({tailX: player.headX, tailY: player.headY});
-                        player.totalTail ++;
-                    }
-                    score ++; 
-                    this.x = Math.floor((Math.random() * (this.max - this.min) + this.min) * scale);
-                    this.y = Math.floor((Math.random() * (this.max - this.min) + this.min) * scale);
-            }
-        }
-
-    }
-
-    class InputHandler {
-        constructor(){
-            this.keys = [];
-            this.touchY = '';
-            this.touchX = '';
-            this.touchTreshold = 100;
-
-            //key controls
-            window.addEventListener('keydown', e => {
-                if ((e.key === "w" || 
-                     e.key === "a" || 
-                     e.key === "s" || 
-                     e.key === "d") 
-                    && this.keys.indexOf(e.key) === -1){
-                        gameInitialState = false;
-                        this.keys.push(e.key);
-                        if (gameOver) restartGame();
-                }
-            });
-            window.addEventListener('keyup', e => {
-                if ((e.key === "w" || 
-                     e.key === "a" || 
-                     e.key === "s" || 
-                     e.key === "d") ){
-                        this.keys.splice(this.keys.indexOf(e.key), 1);
-                }
-            });
-
-            //touch controls
-            window.addEventListener('touchstart', e => {
-                gameInitialState = false;
-                this.touchY = e.changedTouches[0].pageY;
-                this.touchX = e.changedTouches[0].pageX;
-                if (gameOver) restartGame();
-            });
-            window.addEventListener('touchmove',e => {
-                const ySwipeDistance = e.changedTouches[0].pageY - this.touchY;
-                const xSwipeDistance = e.changedTouches[0].pageX - this.touchX;
+            //swipe left or right
+            if ((mouseSwipeDistance < -swipeTreshold) && (keys.indexOf('swipe left') === -1)){
+                keys.splice(0, keys.length);
+                keys.push('swipe left');
                 
-                //swipe up or down
-                if ((ySwipeDistance < -this.touchTreshold) && this.keys.indexOf('swipe up') === -1){
-                    this.keys.splice(0,this.keys.length);
-                    this.keys.push('swipe up');
-                }
-                else if ((ySwipeDistance > this.touchTreshold) && this.keys.indexOf('swipe down') === -1){
-                    this.keys.splice(0,this.keys.length);
-                    this.keys.push('swipe down');
-                }
-                
-                //swipe left or right
-                if ((xSwipeDistance < -this.touchTreshold) && this.keys.indexOf('swipe left') === -1){ 
-                    this.keys.splice(0,this.keys.length);
-                    this.keys.push('swipe left');
-                }
-                else if ((xSwipeDistance > this.touchTreshold) && this.keys.indexOf('swipe right') === -1){
-                    this.keys.splice(0,this.keys.length);
-                    this.keys.push('swipe right');
-                }
-
-            });
-            window.addEventListener('touchend', e => {
-                this.keys.splice(this.keys.indexOf('swipe up'), 1);
-                this.keys.splice(this.keys.indexOf('swipe down'), 1);
-                this.keys.splice(this.keys.indexOf('swipe right'), 1);
-                this.keys.splice(this.keys.indexOf('swipe left'), 1);
-            });
-
-
-        }
-    }
-
-    function restartGame(){
-        snake.reset();
-        score = 0;
-        gameInitialState = true;
-        gameOver = false;
-        animate(0);
-
-    }
-
-    function displayText(context){
-        //score text
-        context.textAlign = "left";
-        context.fillStyle = "black";
-        context.font = "bold 16px Monsterrat";
-        context.fillText("Score: " + score, 20, 50);
-
-        //initial game text
-        if(gameInitialState){
-            context.textAlign = "center";
-            context.fillStyle = "black";
-            context.font = "bold 20px Monsterrat";
-            context.fillText("TOUCH ANYWHERE TO START", canvas.width/2, 200);
+            }
+            else if ((mouseSwipeDistance > swipeTreshold) && (keys.indexOf('swipe right') === -1)){
+                keys.splice(0, keys.length);
+                keys.push('swipe right');
+            }
         }
 
-        //game over text
-        if (gameOver){
-            context.textAlign = "center";
-            context.fillStyle = "black";
-            context.font = "bold 20px Monsterrat";
-            context.fillText("GAME OVER", canvas.width/2, 200);
-            context.fillText("TOUCH TO RESTART", canvas.width/2, 220);
-        }
+    });
+    window.addEventListener('mouseup', e => {
+        isClicked = false;
+        keys.splice(keys.indexOf('swipe right'), 1);
+        keys.splice(keys.indexOf('swipe left'), 1);
+    });
 
-    }
+    //touch controls
+    window.addEventListener('touchstart', e => {
+        touchX = e.changedTouches[0].pageX;
+    });
+    window.addEventListener('touchmove', e => {
+        const touchSwipeDistance = e.changedTouches[0].pageX - touchX;
+
+        //swipe left or right
+        if ((touchSwipeDistance < -swipeTreshold) && (keys.indexOf('swipe left') === -1)){ 
+            keys.splice(0,keys.length);
+            keys.push('swipe left');
+        }
+        else if ((touchSwipeDistance > swipeTreshold) && (keys.indexOf('swipe right') === -1)){
+            keys.splice(0,keys.length);
+            keys.push('swipe right');
+        }
+    });
+    window.addEventListener('touchend', e => {
+        keys.splice(keys.indexOf('swipe right'), 1);
+        keys.splice(keys.indexOf('swipe left'), 1);
+    });
 
     //MAIN GAME
-    const snake = new Snake(canvas.width, canvas.height);
-    const input = new InputHandler();
-    const fruit = new Fruit(canvas.width, canvas.height);
-
     function animate(){
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        if (!gameInitialState) fruit.draw(ctx);
-        fruit.update(snake);
-        snake.draw(ctx);
-        snake.update(input);
-        displayText(ctx);
-        if (!gameOver) requestAnimationFrame(animate);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBall();
+        drawPlayer();
+        drawBricks();
+        collisionDetection();
+
+        //ball boundaries
+        if (ballX + ballSpeedX > canvas.width - ballRadius || ballX + ballSpeedX < ballRadius) ballSpeedX = -ballSpeedX;
+        if (ballY + ballSpeedY < ballRadius) ballSpeedY = -ballSpeedY;
+
+        //ball movement
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
+
+        //player movement
+        playerX += playerSpeed;
+
+        if (keys.indexOf('swipe right') > -1) playerSpeed = 15;
+        else if (keys.indexOf('swipe left') > -1) playerSpeed = -15;
+        else playerSpeed = 0;
+
+        //player boundaries
+        if (playerX < 0) playerX = 0;
+        else if (playerX > canvas.width - playerWidth) playerX = canvas.width - playerWidth
+
+        //player-ball collision
+        if (ballX > playerX && ballX < playerX + playerWidth && ballY > playerY && ballY < playerY + playerHeight) ballSpeedY = -ballSpeedY;
+
+        //update bricks
+        brickTop += brickSpeed;
+
+
+
     }
 
-    animate();
-
+    this.setInterval(animate, 10);
 });
