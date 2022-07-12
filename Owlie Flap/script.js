@@ -1,13 +1,34 @@
 window.addEventListener('load', function(){
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 1080;
-    canvas.height = 1920;
+    //UI ELEMENTS
+    const menu = document.getElementById('menu');
+    menu.style.width = "1080px";
+    menu.style.height = "1920px";
+
+    //Main Menu
+    const playButton = document.getElementById('play');
+    const quitButton = document.getElementById('quit');
+
+    playButton.addEventListener('click', function(){
+        menu.style.display = "none";
+        game.style.display = "block";
+    });
+    quitButton.addEventListener('click', function(){
+        close();
+    });
+
+
+
+
+    //GAME ELEMENTS
+    const game = document.getElementById('game');
+    const gameContext = game.getContext('2d');
+    game.width = 1080;
+    game.height = 1920;
     let obstacles = [];
     let score = 0;
     let gameInitialState = true;
     let gameOver = false;
-
+    
 
     class Player {
         constructor(gameWidth, gameHeight){
@@ -79,7 +100,7 @@ window.addEventListener('load', function(){
             if (player.x < this.x + this.width &&
                 player.x + player.width > this.x &&
                 ((player.y < 0 + this.top && player.y + player.height > 0) || 
-                (player.y > this.gameHeight - this.bottom && 
+                (player.y + player.height > this.gameHeight - this.bottom && 
                 player.y + player.height < this.gameHeight))){
                     gameOver = true;
                 }
@@ -91,43 +112,40 @@ window.addEventListener('load', function(){
             this.keys = [];
 
             //mouse controls
-            window.addEventListener('mousedown', e => {
+            game.addEventListener('mousedown', e => {
                 gameInitialState = false;
                 if (this.keys.indexOf('click') === -1){
                     this.keys.push('click');
                     if (gameOver) restartGame();
                 }
             });
-
-            window.addEventListener('mouseup', e => {
+            game.addEventListener('mouseup', e => {
                 this.keys.splice(this.keys.indexOf('click'), 1)
             });
 
             //touch controls
-            window.addEventListener('touchstart', e => {
+            game.addEventListener('touchstart', e => {
                 gameInitialState = false;
                 if (this.keys.indexOf('touch') === -1) {
                     this.keys.push('touch');
                     if (gameOver) restartGame();
                 }
             });
-            window.addEventListener('touchend', e => {
+            game.addEventListener('touchend', e => {
                 this.keys.splice(this.keys.indexOf('touch', 1));
             });
-
-            
         }   
     }
     
      function spawnObstacle(deltaTime){
         if (obstacleTimer > obstacleInterval){
-            obstacles.push(new Obstacle(canvas.width, canvas.height));
+            obstacles.push(new Obstacle(game.width, game.height));
             obstacleTimer = 0;
         } else {
             obstacleTimer += deltaTime;
         }
         obstacles.forEach(obstacle => {
-            obstacle.draw(ctx);
+            obstacle.draw(gameContext);
             obstacle.update(player);
         });
         obstacles = obstacles.filter(obstacle => !obstacle.markedForDelete);
@@ -146,7 +164,7 @@ window.addEventListener('load', function(){
             context.textAlign = "center";
             context.fillStyle = "black";
             context.font = "bold 70px Monsterrat";
-            context.fillText("TOUCH ANYWHERE TO START", canvas.width/2, 200);
+            context.fillText("TOUCH ANYWHERE TO START", game.width/2, 200);
         }
 
         //game over text
@@ -154,8 +172,8 @@ window.addEventListener('load', function(){
             context.textAlign = "center";
             context.fillStyle = "black";
             context.font = "bold 70px Monsterrat";
-            context.fillText("GAME OVER", canvas.width/2, 200);
-            context.fillText("TOUCH TO RESTART", canvas.width/2, 270);
+            context.fillText("GAME OVER", game.width/2, 200);
+            context.fillText("TOUCH TO RESTART", game.width/2, 270);
         }
     }
 
@@ -169,10 +187,9 @@ window.addEventListener('load', function(){
 
     }
 
-
-    //MAIN GAME
+    //MAIN FUNCTION
     const input = new InputHandler();
-    const player = new Player(canvas.width, canvas.height);
+    const player = new Player(game.width, game.height);
     let lastTime = 0;
     let obstacleTimer = 0;
     let obstacleInterval = 300;
@@ -180,11 +197,11 @@ window.addEventListener('load', function(){
     function animate(timeStamp){
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        ctx.clearRect(0,0,canvas.width, canvas.height);
-        player.draw(ctx);
+        gameContext.clearRect(0,0,game.width, game.height);
+        player.draw(gameContext);
         player.update(input);
         if (!gameInitialState) spawnObstacle(deltaTime);
-        displayText(ctx);
+        displayText(gameContext);
         if (!gameOver) requestAnimationFrame(animate);
 
     }
