@@ -1,29 +1,62 @@
 window.addEventListener('load', function(){
-    //UI ELEMENTS
+    //INITIAL SETUP
+    const game = document.getElementById('game');
+    const gameContext = game.getContext('2d');
     const menu = document.getElementById('menu');
+    const gameOverUI = document.getElementById('gameoverUI');
     menu.style.width = "1080px";
     menu.style.height = "1920px";
+    game.width = 1080;
+    game.height = 1920;
+   
+    //UI ELEMENTS
+    function showMainMenu(){
+        menu.style.display = "block";
+    }
+    function hideMainMenu(){
+        menu.style.display = "none";
+    }
+    function showGameScreen(){
+        game.style.display = "block";
+    }
+    function hideGameScreen(){
+        game.style.display = "none";
+    }
+    function showGameOverUI(){
+        gameOverUI.style.display = "block";
+    }
+    function hideGameOverUI(){
+        gameOverUI.style.display = "none";
+    }
 
     //Main Menu
     const playButton = document.getElementById('play');
     const quitButton = document.getElementById('quit');
 
     playButton.addEventListener('click', function(){
-        menu.style.display = "none";
-        game.style.display = "block";
+        hideMainMenu();
+        showGameScreen();
+        restartGame();
     });
     quitButton.addEventListener('click', function(){
         close();
     });
 
+    //Game Over
+    const restartButton = document.getElementById('restart');
+    const exitButton = document.getElementById('exit');
 
-
+    restartButton.addEventListener('click', function(){
+        hideGameOverUI();
+        restartGame();
+    });
+    exitButton.addEventListener('click', function(){
+        hideGameOverUI();
+        hideGameScreen();
+        showMainMenu();
+    });
 
     //GAME ELEMENTS
-    const game = document.getElementById('game');
-    const gameContext = game.getContext('2d');
-    game.width = 1080;
-    game.height = 1920;
     let obstacles = [];
     let score = 0;
     let gameInitialState = true;
@@ -116,7 +149,6 @@ window.addEventListener('load', function(){
                 gameInitialState = false;
                 if (this.keys.indexOf('click') === -1){
                     this.keys.push('click');
-                    if (gameOver) restartGame();
                 }
             });
             game.addEventListener('mouseup', e => {
@@ -128,7 +160,6 @@ window.addEventListener('load', function(){
                 gameInitialState = false;
                 if (this.keys.indexOf('touch') === -1) {
                     this.keys.push('touch');
-                    if (gameOver) restartGame();
                 }
             });
             game.addEventListener('touchend', e => {
@@ -169,11 +200,7 @@ window.addEventListener('load', function(){
 
         //game over text
         if (gameOver){
-            context.textAlign = "center";
-            context.fillStyle = "black";
-            context.font = "bold 70px Monsterrat";
-            context.fillText("GAME OVER", game.width/2, 200);
-            context.fillText("TOUCH TO RESTART", game.width/2, 270);
+            showGameOverUI();
         }
     }
 
