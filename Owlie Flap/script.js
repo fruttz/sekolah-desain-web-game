@@ -36,7 +36,6 @@ window.addEventListener('load', function(){
     playButton.addEventListener('click', function(){
         hideMainMenu();
         showGameScreen();
-        restartGame();
     });
     quitButton.addEventListener('click', function(){
         close();
@@ -54,6 +53,7 @@ window.addEventListener('load', function(){
         hideGameOverUI();
         hideGameScreen();
         showMainMenu();
+        restartGame();
     });
 
     //GAME ELEMENTS

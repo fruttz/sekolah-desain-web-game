@@ -1,14 +1,70 @@
 window.addEventListener('load', function(){
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 1080;
-    canvas.height = 1920;
+    //INITIAL SETUP
+    const game = document.getElementById('game');
+    const ctx = game.getContext('2d');
+    const menu = document.getElementById('menu');
+    const gameOverUI = document.getElementById('gameoverUI');
+    menu.style.width = "1080px";
+    menu.style.height = "1920px";
+    game.width = 1080;
+    game.height = 1920;
 
-    //PLAYER
+    //UI ELEMENTS
+    function showMainMenu(){
+        menu.style.display = "block";
+    }
+    function hideMainMenu(){
+        menu.style.display = "none";
+    }
+    function showGameScreen(){
+        game.style.display = "block";
+    }
+    function hideGameScreen(){
+        game.style.display = "none";
+    }
+    function showGameOverUI(){
+        gameOverUI.style.display = "block";
+    }
+    function hideGameOverUI(){
+        gameOverUI.style.display = "none";
+    }
+
+    //Main Menu
+    const playButton = document.getElementById('play');
+    const quitButton = document.getElementById('quit');
+
+    playButton.addEventListener('click', function(){
+        hideMainMenu();
+        showGameScreen();
+    });
+    quitButton.addEventListener('click', function(){
+        close();
+    });
+
+    //Game Over
+    const restartButton = document.getElementById('restart');
+    const exitButton = document.getElementById('exit');
+
+    restartButton.addEventListener('click', function(){
+        hideGameOverUI();
+        restartGame();
+    });
+    exitButton.addEventListener('click', function(){
+        hideGameOverUI();
+        hideGameScreen();
+        showMainMenu();
+        restartGame();
+    });
+
+    //GAME ELEMENTS
+    let gameInitialState = true;
+    let gameOver = false;
+
+    //Player
     var playerHeight = 50;
     var playerWidth = 300;
-    var playerX = (canvas.width - playerWidth)/2;
-    var playerY = (canvas.height - playerHeight) - 50;
+    var playerX = (game.width - playerWidth)/2;
+    var playerY = (game.height - playerHeight) - 50;
     var playerSpeed = 0;
     
     function drawPlayer(){
@@ -16,7 +72,7 @@ window.addEventListener('load', function(){
         ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
     }
 
-    //BALL
+    //Ball
     var ballRadius = 50;
     var ballX = playerX + playerWidth / 2;
     var ballY = playerY - ballRadius;
@@ -30,13 +86,13 @@ window.addEventListener('load', function(){
         ctx.fill();
     }
 
-    //BRICKS
+    //Bricks
     var brickRow = 5;
     var brickColumn = 30;
     var brickWidth = 200;
     var brickHeight = 50;
     var brickPadding = 10;
-    var brickTop = (-canvas.height) + (brickHeight * 5);
+    var brickTop = (-game.height) + (brickHeight * 5);
     var brickLeft = 25;
     var brickSpeed = 0.25;
     var bricks = [];
@@ -76,7 +132,7 @@ window.addEventListener('load', function(){
     }
 
 
-    //INPUT HANDLER
+    //Input Handler
     var keys = [];
     var swipeTreshold = 20;
     var touchX = '';
@@ -84,7 +140,8 @@ window.addEventListener('load', function(){
     var isClicked = false;
 
     //mouse controls
-    window.addEventListener('mousedown', e => {
+    game.addEventListener('mousedown', e => {
+        gameInitialState = false;
         isClicked = true;
         clickX = e.pageX;
     });
@@ -113,7 +170,8 @@ window.addEventListener('load', function(){
     });
 
     //touch controls
-    window.addEventListener('touchstart', e => {
+    game.addEventListener('touchstart', e => {
+        gameInitialState = false;
         touchX = e.changedTouches[0].pageX;
     });
     window.addEventListener('touchmove', e => {
@@ -134,42 +192,69 @@ window.addEventListener('load', function(){
         keys.splice(keys.indexOf('swipe left'), 1);
     });
 
-    //MAIN GAME
+    //Restart Game
+    function restartGame(){
+        playerX = (game.width - playerWidth)/2;
+        playerSpeed = 0;
+        ballX = playerX + playerWidth / 2;
+        ballY = playerY - ballRadius;
+        ballSpeedX = 10;
+        ballSpeedY = -10;
+        brickTop = (-game.height) + (brickHeight * 5);
+        brickRow = 5;
+        brickColumn = 30;
+        for (var col = 0; col < brickColumn; col++){
+            bricks[col] = [];
+            for (var row = 0; row < brickRow; row++){
+                bricks[col][row] = { x: 0, y: 0, delete: false};
+            }
+        }
+        gameInitialState = true;
+        gameOver = false;
+        animate();
+    }
+
+    //MAIN FUNCTION
     function animate(){
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, game.width, game.height);
         drawBall();
         drawPlayer();
         drawBricks();
         collisionDetection();
 
-        //ball boundaries
-        if (ballX + ballSpeedX > canvas.width - ballRadius || ballX + ballSpeedX < ballRadius) ballSpeedX = -ballSpeedX;
-        if (ballY + ballSpeedY < ballRadius) ballSpeedY = -ballSpeedY;
+        if (!gameInitialState) {
+            //ball boundaries
+            if (ballX + ballSpeedX > game.width - ballRadius || ballX + ballSpeedX < ballRadius) ballSpeedX = -ballSpeedX;
+            if (ballY + ballSpeedY < ballRadius) ballSpeedY = -ballSpeedY;
+            else if (ballY + ballSpeedY > game.height + ballRadius) {
+                gameOver = true;
+                showGameOverUI();
+            }
 
-        //ball movement
-        ballX += ballSpeedX;
-        ballY += ballSpeedY;
+            //ball movement
+            ballX += ballSpeedX;
+            ballY += ballSpeedY;
 
-        //player movement
-        playerX += playerSpeed;
+            //player movement
+            playerX += playerSpeed;
 
-        if (keys.indexOf('swipe right') > -1) playerSpeed = 15;
-        else if (keys.indexOf('swipe left') > -1) playerSpeed = -15;
-        else playerSpeed = 0;
+            if (keys.indexOf('swipe right') > -1) playerSpeed = 15;
+            else if (keys.indexOf('swipe left') > -1) playerSpeed = -15;
+            else playerSpeed = 0;
 
-        //player boundaries
-        if (playerX < 0) playerX = 0;
-        else if (playerX > canvas.width - playerWidth) playerX = canvas.width - playerWidth
+            //player boundaries
+            if (playerX < 0) playerX = 0;
+            else if (playerX > game.width - playerWidth) playerX = game.width - playerWidth
 
-        //player-ball collision
-        if (ballX > playerX && ballX < playerX + playerWidth && ballY > playerY && ballY < playerY + playerHeight) ballSpeedY = -ballSpeedY;
+            //player-ball collision
+            if (ballX > playerX && ballX < playerX + playerWidth && ballY > playerY && ballY < playerY + playerHeight) ballSpeedY = -ballSpeedY;
 
-        //update bricks
-        brickTop += brickSpeed;
+            //update bricks
+            brickTop += brickSpeed;
+        }
 
-
-
+        if (!gameOver) requestAnimationFrame(animate);
     }
 
-    this.setInterval(animate, 10);
+    animate();
 });

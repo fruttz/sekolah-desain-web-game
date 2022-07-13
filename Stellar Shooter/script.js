@@ -1,8 +1,63 @@
 window.addEventListener('load', function(){
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    canvas.width = 1080;
-    canvas.height = 1920;
+    //INITIAL SETUP
+    const game = document.getElementById('game');
+    const ctx = game.getContext('2d');
+    const menu = document.getElementById('menu');
+    const gameOverUI = document.getElementById('gameoverUI');
+    menu.style.width = "1080px";
+    menu.style.height = "1920px";
+    game.width = 1080;
+    game.height = 1920;
+
+    //UI ELEMENTS
+    function showMainMenu(){
+        menu.style.display = "block";
+    }
+    function hideMainMenu(){
+        menu.style.display = "none";
+    }
+    function showGameScreen(){
+        game.style.display = "block";
+    }
+    function hideGameScreen(){
+        game.style.display = "none";
+    }
+    function showGameOverUI(){
+        gameOverUI.style.display = "block";
+    }
+    function hideGameOverUI(){
+        gameOverUI.style.display = "none";
+    }
+
+    //Main Menu
+    const playButton = document.getElementById('play');
+    const quitButton = document.getElementById('quit');
+
+    playButton.addEventListener('click', function(){
+        hideMainMenu();
+        showGameScreen();
+    });
+    quitButton.addEventListener('click', function(){
+        close();
+    });
+
+    //Game Over
+    const restartButton = document.getElementById('restart');
+    const exitButton = document.getElementById('exit');
+
+    restartButton.addEventListener('click', function(){
+        hideGameOverUI();
+        restartGame();
+    });
+    exitButton.addEventListener('click', function(){
+        hideGameOverUI();
+        hideGameScreen();
+        showMainMenu();
+        restartGame();
+    });
+
+
+    //GAME ELEMENTS
     let gameInitialState = true;
     let gameOver = false;
     let score = 0
@@ -133,7 +188,7 @@ window.addEventListener('load', function(){
             this.isClicked = false;
 
             //mouse controls
-            window.addEventListener('mousedown', e => {
+            game.addEventListener('mousedown', e => {
                 gameInitialState = false;
                 this.isClicked = true;
                 this.clickX = e.pageX
@@ -163,7 +218,7 @@ window.addEventListener('load', function(){
             });
 
             //touch controls
-            window.addEventListener('touchstart', e => {
+            game.addEventListener('touchstart', e => {
                 gameInitialState = false;
                 this.touchX = e.changedTouches[0].pageX;
                 if (gameOver) restartGame();
@@ -194,7 +249,7 @@ window.addEventListener('load', function(){
     let projectileInterval = 150;
     function shootProjectiles(deltaTime) {
         if (projectileTimer > projectileInterval){
-            projectiles.push(new Projectile(canvas.width, canvas.height, player));
+            projectiles.push(new Projectile(game.width, game.height, player));
             projectileTimer = 0;
         } else {
             projectileTimer += deltaTime;
@@ -212,7 +267,7 @@ window.addEventListener('load', function(){
     let asteroidInterval = 1500;    
     function spawnAsteroid(deltaTime) {
         if (asteroidTimer > asteroidInterval){
-            asteroids.push(new Asteroid(canvas.width, canvas.height, hpArray));
+            asteroids.push(new Asteroid(game.width, game.height, hpArray));
             asteroidTimer = 0;
         } else {
             asteroidTimer += deltaTime;
@@ -236,16 +291,12 @@ window.addEventListener('load', function(){
             context.textAlign = "center";
             context.fillStyle = "white";
             context.font = "bold 70px Monsterrat";
-            context.fillText("TOUCH ANYWHERE TO START", canvas.width/2, 200);
+            context.fillText("TOUCH ANYWHERE TO START", game.width/2, 200);
         }
 
         //game over text
         if (gameOver){
-            context.textAlign = "center";
-            context.fillStyle = "white";
-            context.font = "bold 70px Monsterrat";
-            context.fillText("GAME OVER", canvas.width/2, 200);
-            context.fillText("TOUCH TO RESTART", canvas.width/2, 270);
+            showGameOverUI();
         }
     }
 
@@ -260,7 +311,7 @@ window.addEventListener('load', function(){
     }
 
     //MAIN GAME
-    const player = new Player(canvas.width, canvas.height);
+    const player = new Player(game.width, game.height);
     const input = new InputHandler();
     let lastTime = 0;
 
@@ -268,7 +319,7 @@ window.addEventListener('load', function(){
     function animate(timeStamp){
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp; 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, game.width, game.height);
         player.draw(ctx);
         player.update(input);
         if (!gameInitialState) {

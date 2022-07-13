@@ -1,0 +1,101 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background: white;
+}
+
+#game{
+    position:absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 5px solid black;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#menu{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 5px solid black;
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#title{
+    position: relative;
+    top: 75px;
+    text-align: center;
+    font-size: 60px;
+    font-family: "Papyrus", fantasy;
+}
+
+
+#play{
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 50px;
+    width: 150px;
+    font-size: 40px;
+    border-radius: 30px;
+    display: block;
+}
+
+#quit{
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 50px;
+    width: 150px;
+    font-size: 40px;
+    border-radius: 30px;
+    display: block;
+    margin-top: 2rem;
+}
+
+#gameoverUI{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 200px;
+    height: 150px;
+    transform: translate(-50%, -50%);
+    border: 1px solid black;
+    border-radius: 12px;
+    max-width: 100%;
+    max-height: 100%;
+    background-color: white;
+}
+
+#gameovertext{
+    position: relative;
+    top: 25px;
+    text-align: center;
+    font-size: 30px;
+}
+
+#restart{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-top: 5px;
+    transform: translateX(-50%);
+    display: block;
+}
+
+#exit{
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: block;
+}
