@@ -5,7 +5,8 @@
 }
 
 body{
-    background: white;
+    background-color: white;
+    background-image: url(img/bg.png);
 }
 
 #game{
