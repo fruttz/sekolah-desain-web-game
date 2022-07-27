@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+@font-face {
+    font-family: space;
+    src: url(font/dendritic_voltage.ttf);
+}
+
 body{
     background: black;
     background-image: url(img/bg.png);
@@ -38,54 +43,90 @@ body{
     text-align: center;
     font-size: 60px;
     color: white;
-    font-family: "Papyrus", fantasy;
+    font-family: space;
 }
 
 
 #play{
-    position: relative;
+    display: block;
+	position: relative;
     top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    height: 50px;
-    width: 150px;
-    font-size: 40px;
-    border-radius: 30px;
-    display: block;
+	margin: 0.5em -3.5em;
+	padding: .8em 2.2em;
+	cursor: pointer;
+
+	background: #FFFFFF;
+	border: none;
+	border-radius: .4em;
+
+	text-transform: uppercase;
+	font-size: 1.4em;
+	font-family: space;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+
+	mix-blend-mode: color-dodge;
+	perspective: 500px;
+	transform-style: preserve-3d;
+    animation: rotateAngle 6s linear infinite;
 }
 
+#play:active {
+	background-color: blue;
+}
+	
+
 #quit{
-    position: relative;
+    display: block;
+	position: relative;
     top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    height: 50px;
-    width: 150px;
-    font-size: 40px;
-    border-radius: 30px;
-    display: block;
-    margin-top: 2rem;
+	margin: 0.5em -3.5em;
+	padding: .8em 2.2em;
+	cursor: pointer;
+
+	background: #FFFFFF;
+	border: none;
+	border-radius: .4em;
+
+	text-transform: uppercase;
+	font-size: 1.4em;
+	font-family: space;
+	font-weight: 500;
+	letter-spacing: 0.04em;
+
+	mix-blend-mode: color-dodge;
+	perspective: 500px;
+	transform-style: preserve-3d;
+    animation: rotateAngle 6s linear infinite;
+}
+
+#quit:active {
+    background-color: blue;
 }
 
 #gameoverUI{
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 200px;
-    height: 150px;
+    width: 250px;
+    height: 200px;
     transform: translate(-50%, -50%);
     border: 1px solid black;
     border-radius: 12px;
     max-width: 100%;
     max-height: 100%;
-    background-color: white;
+    background-image: url(img/ui-bg.png);
 }
 
 #gameovertext{
     position: relative;
     top: 25px;
     text-align: center;
-    font-size: 30px;
+    font-family: space;
+    font-size: 40px;
+    color: white;
 }
 
 #restart{
@@ -93,14 +134,41 @@ body{
     top: 50%;
     left: 50%;
     margin-top: 5px;
+    font-family: space;
     transform: translateX(-50%);
+    background-color: #FFFFFF;
     display: block;
+    border-radius: .4em;
+    padding: .5em 0.5em;
 }
 
 #exit{
     position: relative;
     top: 50%;
     left: 50%;
+    font-family: space;
     transform: translateX(-50%);
     display: block;
+    border-radius: .4em;
+    padding: .5em 0.5em;
+}
+
+@keyframes rotateAngle {
+	0% {
+		transform: rotateY(0deg) rotateX(10deg);
+		animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+	}
+	25% {
+		transform: rotateY(20deg) rotateX(10deg);
+	}
+	50% {
+		transform: rotateY(0deg) rotateX(10deg);
+		animation-timing-function: cubic-bezier(0.61, 1, 0.88, 1);
+	}
+	75% {
+		transform: rotateY(-20deg) rotateX(10deg);
+	}
+	100% {
+		transform: rotateY(0deg) rotateX(10deg);
+	}
 }

@@ -4,6 +4,8 @@ window.addEventListener('load', function(){
     const ctx = game.getContext('2d');
     const menu = document.getElementById('menu');
     const gameOverUI = document.getElementById('gameoverUI');
+    const customFont = new FontFace('space', 'url(font/dendritic_voltage.ttf)');
+    customFont.load();
     menu.style.width = "1024px";
     menu.style.height = "1024px";
     game.width = 768;
@@ -311,14 +313,14 @@ window.addEventListener('load', function(){
         //score text
         context.textAlign = "left";
         context.fillStyle = "white";
-        context.font = "bold 20px Monsterrat";
+        context.font = "20px space";
         context.fillText("Score: " + score, 20, 50);
 
         //initial game text
         if(gameInitialState){
             context.textAlign = "center";
             context.fillStyle = "white";
-            context.font = "bold 30px Monsterrat";
+            context.font = "30px space";
             context.fillText("TOUCH ANYWHERE TO START", game.width/2, 200);
         }
 
@@ -350,10 +352,10 @@ window.addEventListener('load', function(){
         lastTime = timeStamp; 
         ctx.clearRect(0, 0, game.width, game.height);
         background.draw(ctx);
+        background.update();
         player.draw(ctx);
         player.update(input);
         if (!gameInitialState) {
-            background.update();
             shootProjectiles(deltaTime);
             spawnAsteroid(deltaTime);
         }
