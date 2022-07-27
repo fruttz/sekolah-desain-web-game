@@ -6,6 +6,7 @@
 
 body{
     background: white;
+    background-image: url(img/bg.gif);
 }
 
 #game{

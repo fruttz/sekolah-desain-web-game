@@ -131,8 +131,6 @@ window.addEventListener('load', function(){
         update(player){
             //move
             this.x -= 10;
-            var xOffset = 3;
-            var yOffset = 10;
 
             //delete after passing boundary and add score
             if (this.x < 0 - this.width) {
@@ -141,8 +139,11 @@ window.addEventListener('load', function(){
             }
 
             //collision detection
+            var xOffset = 3;
+            var yOffset = 10;
+
             if (player.x < this.x + this.width &&
-                player.x + player.width - xOffset> this.x + this.width/2 &&
+                player.x + player.width - xOffset > this.x + this.width/2 &&
                 ((player.y + yOffset < 0 + this.top && player.y + player.height > 0) || 
                 (player.y + yOffset > this.gameHeight - this.bottom && 
                 player.y + player.height + yOffset < this.gameHeight))){

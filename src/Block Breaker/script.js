@@ -6,8 +6,8 @@ window.addEventListener('load', function(){
     const gameOverUI = document.getElementById('gameoverUI');
     menu.style.width = "1080px";
     menu.style.height = "1920px";
-    game.width = 1080;
-    game.height = 1920;
+    game.width = 768;
+    game.height = 1024;
 
     //UI ELEMENTS
     function showMainMenu(){
@@ -20,7 +20,7 @@ window.addEventListener('load', function(){
         game.style.display = "block";
     }
     function hideGameScreen(){
-        game.style.display = "none";
+        game.style.display = "none"; 
     }
     function showGameOverUI(){
         gameOverUI.style.display = "block";
@@ -59,43 +59,46 @@ window.addEventListener('load', function(){
     //GAME ELEMENTS
     let gameInitialState = true;
     let gameOver = false;
+    let score = 0;
 
     //Player
-    var playerHeight = 50;
-    var playerWidth = 300;
+    var playerHeight = 30;
+    var playerWidth = 150;
     var playerX = (game.width - playerWidth)/2;
     var playerY = (game.height - playerHeight) - 50;
     var playerSpeed = 0;
+    const playerImage = new Image();
+    playerImage.src = ('img/player.png')
     
     function drawPlayer(){
-        ctx.fillStyle = "#0095DD";
-        ctx.fillRect(playerX, playerY, playerWidth, playerHeight);
+        ctx.drawImage(playerImage, playerX, playerY, playerWidth, playerHeight);
     }
 
     //Ball
-    var ballRadius = 50;
+    var ballRadius = 20;
     var ballX = playerX + playerWidth / 2;
     var ballY = playerY - ballRadius;
-    var ballSpeedX = 10;
-    var ballSpeedY = -10;
+    var ballSpeedX = 8;
+    var ballSpeedY = -8;
+    const ballImage = new Image();
+    ballImage.src = ('img/ball.png')
 
     function drawBall(){
-        ctx.beginPath();
-        ctx.arc(ballX, ballY, ballRadius, 0, Math.PI*2);
-        ctx.fillStyle = "#0095DD";
-        ctx.fill();
+        ctx.drawImage(ballImage, ballX - ballRadius, ballY - ballRadius, ballRadius*2, ballRadius*2);
     }
 
     //Bricks
-    var brickRow = 5;
+    var brickRow = 6;
     var brickColumn = 30;
-    var brickWidth = 200;
-    var brickHeight = 50;
+    var brickWidth = 100;
+    var brickHeight = 25;
     var brickPadding = 10;
     var brickTop = (-game.height) + (brickHeight * 5);
-    var brickLeft = 25;
-    var brickSpeed = 0.25;
+    var brickLeft = 55;
+    var brickSpeed = 0.15;
     var bricks = [];
+    const brickImage = new Image();
+    brickImage.src = ('img/brick.png')
 
     for (var col = 0; col < brickColumn; col++){
         bricks[col] = [];
@@ -112,20 +115,26 @@ window.addEventListener('load', function(){
                     var brickY = (col * (brickHeight + brickPadding)) + brickTop;
                     bricks[col][row].x = brickX;
                     bricks[col][row].y = brickY;
-                    ctx.fillStyle = "#0095DD";
-                    ctx.fillRect(bricks[col][row].x, bricks[col][row].y, brickWidth, brickHeight);
+                    ctx.drawImage(brickImage, bricks[col][row].x, bricks[col][row].y, brickWidth, brickHeight);
                 }
             }
         }
     }
 
-    function collisionDetection() {
+    function brickCollisionDetection() {
         for (var col = 0; col < brickColumn; col++){
             for (var row = 0; row < brickRow; row++){
                 var b = bricks[col][row];
+                //ball collision
                 if (b.delete == false && ballX > b.x && ballX < b.x + brickWidth && ballY > b.y && ballY < b.y + brickHeight){
                     ballSpeedY = -ballSpeedY;
                     b.delete = true;
+                    score ++;
+                }
+                //player collision
+                if (b.delete == false && playerX + playerWidth > b.x && playerX < b.x + brickWidth && playerY + playerHeight > b.y && playerY < b.y + brickHeight){
+                    gameOver = true;
+                    showGameOverUI();
                 }
             }
         }
@@ -134,7 +143,7 @@ window.addEventListener('load', function(){
 
     //Input Handler
     var keys = [];
-    var swipeTreshold = 20;
+    var swipeTreshold = 10;
     var touchX = '';
     var clickX = '';
     var isClicked = false;
@@ -192,16 +201,32 @@ window.addEventListener('load', function(){
         keys.splice(keys.indexOf('swipe left'), 1);
     });
 
+    function displayText(context){
+        //score text
+        context.textAlign = "left";
+        context.fillStyle = "black";
+        context.font = "bold 20px Monsterrat";
+        context.fillText("Score: " + score, 20, 50);
+
+        //initial game text
+        if(gameInitialState){
+            context.textAlign = "center";
+            context.fillStyle = "black";
+            context.font = "bold 30px Monsterrat";
+            context.fillText("TOUCH ANYWHERE TO START", game.width/2, 200);
+        }
+    }
+
     //Restart Game
     function restartGame(){
         playerX = (game.width - playerWidth)/2;
         playerSpeed = 0;
         ballX = playerX + playerWidth / 2;
         ballY = playerY - ballRadius;
-        ballSpeedX = 10;
-        ballSpeedY = -10;
+        ballSpeedX = 8;
+        ballSpeedY = -8;
         brickTop = (-game.height) + (brickHeight * 5);
-        brickRow = 5;
+        brickRow = 6;
         brickColumn = 30;
         for (var col = 0; col < brickColumn; col++){
             bricks[col] = [];
@@ -211,16 +236,18 @@ window.addEventListener('load', function(){
         }
         gameInitialState = true;
         gameOver = false;
+        score = 0;
         animate();
     }
 
     //MAIN FUNCTION
     function animate(){
         ctx.clearRect(0, 0, game.width, game.height);
-        drawBall();
         drawPlayer();
+        drawBall();
         drawBricks();
-        collisionDetection();
+        displayText(ctx);
+        brickCollisionDetection();
 
         if (!gameInitialState) {
             //ball boundaries
@@ -238,8 +265,8 @@ window.addEventListener('load', function(){
             //player movement
             playerX += playerSpeed;
 
-            if (keys.indexOf('swipe right') > -1) playerSpeed = 15;
-            else if (keys.indexOf('swipe left') > -1) playerSpeed = -15;
+            if (keys.indexOf('swipe right') > -1) playerSpeed = 10;
+            else if (keys.indexOf('swipe left') > -1) playerSpeed = -10;
             else playerSpeed = 0;
 
             //player boundaries
@@ -247,7 +274,7 @@ window.addEventListener('load', function(){
             else if (playerX > game.width - playerWidth) playerX = game.width - playerWidth
 
             //player-ball collision
-            if (ballX > playerX && ballX < playerX + playerWidth && ballY > playerY && ballY < playerY + playerHeight) ballSpeedY = -ballSpeedY;
+            if (ballX + ballRadius > playerX && ballX < playerX + playerWidth && ballY + ballRadius > playerY && ballY < playerY + playerHeight) ballSpeedY = -ballSpeedY;
 
             //update bricks
             brickTop += brickSpeed;
