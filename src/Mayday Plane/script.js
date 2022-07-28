@@ -4,6 +4,8 @@ window.addEventListener('load', function(){
     const gameContext = game.getContext('2d');
     const menu = document.getElementById('menu');
     const gameOverUI = document.getElementById('gameoverUI');
+    const gameFont = new FontFace('plane', 'url(font/kenvector_future.ttf)')
+    gameFont.load();
     menu.style.width = "1024px";
     menu.style.height = "1024px";
     game.width = 768;
@@ -96,6 +98,8 @@ window.addEventListener('load', function(){
             else if (this.y > this.gameHeight - this.height) {
                 this.y = this.gameHeight - this.height;
                 gameOver = true;
+                showGameOverUI();
+                
             }
         }
 
@@ -148,6 +152,7 @@ window.addEventListener('load', function(){
                 (player.y + yOffset > this.gameHeight - this.bottom && 
                 player.y + player.height + yOffset < this.gameHeight))){
                     gameOver = true;
+                    showGameOverUI();
                 }
         }
     }
@@ -222,20 +227,15 @@ window.addEventListener('load', function(){
         //score text
         context.textAlign = "left";
         context.fillStyle = "black";
-        context.font = "bold 20px Monsterrat";
+        context.font = "bold 20px plane";
         context.fillText("Score: " + score, 20, 50);
 
         //initial game text
         if(gameInitialState){
             context.textAlign = "center";
             context.fillStyle = "black";
-            context.font = "bold 30px Monsterrat";
+            context.font = "bold 30px plane";
             context.fillText("TOUCH ANYWHERE TO START", game.width/2, 200);
-        }
-
-        //game over text
-        if (gameOver){
-            showGameOverUI();
         }
     }
 

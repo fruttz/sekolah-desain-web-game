@@ -4,6 +4,11 @@
     box-sizing: border-box;
 }
 
+@font-face {
+    font-family: "plane";
+    src: url(font/kenvector_future.ttf);
+}
+
 body{
     background-color: white;
     background-image: url(img/bg.png);
@@ -34,7 +39,7 @@ body{
     top: 75px;
     text-align: center;
     font-size: 60px;
-    font-family: "Papyrus", fantasy;
+    font-family: "plane";
 }
 
 
@@ -42,62 +47,95 @@ body{
     position: relative;
     top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    margin-top: 20px;
+    margin-left: -65px;
+    transform: skew(20deg);
     height: 50px;
     width: 150px;
     font-size: 40px;
-    border-radius: 30px;
+    font-family: "plane";
+    background-image: linear-gradient(to bottom, gold, white);
     display: block;
+}
+
+#play:active{
+    background-image: linear-gradient(to top, gold, white);
 }
 
 #quit{
     position: relative;
     top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    margin-left: -65px;
+    transform: skew(-20deg);
     height: 50px;
     width: 150px;
     font-size: 40px;
-    border-radius: 30px;
+    font-family: "plane";
+    background-image: linear-gradient(to bottom, white, gold);
     display: block;
-    margin-top: 2rem;
+    margin-top: 1rem;
+}
+
+#quit:active{
+    background-image: linear-gradient(to top, white, gold);
 }
 
 #gameoverUI{
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 200px;
-    height: 150px;
+    width: 250px;
+    height: 200px;
     transform: translate(-50%, -50%);
-    border: 1px solid black;
     border-radius: 12px;
     max-width: 100%;
     max-height: 100%;
     background-color: white;
+    background-image: url(img/menu-bg.png);
 }
 
 #gameovertext{
     position: relative;
     top: 25px;
     text-align: center;
-    font-size: 30px;
+    font-size: 40px;
+    font-family: "plane";
 }
 
 #restart{
     position: absolute;
     top: 50%;
     left: 50%;
-    margin-top: 5px;
+    margin-top: 20px;
+    text-align: center;
+    font-family: "plane";
     transform: translateX(-50%);
+    background-color: #FFFFFF;
     display: block;
+    border-radius: .4em;
+    padding: .5em 0.5em;
+    letter-spacing: 0.04em;
+}
+
+#restart:active{
+    background-color: gold;
 }
 
 #exit{
     position: relative;
     top: 50%;
     left: 50%;
+    margin-top: -30px;
+    text-align: center;
+    font-family: "plane";
     transform: translateX(-50%);
     display: block;
+    border-radius: .4em;
+    padding: .5em 0.5em;
+    letter-spacing: 0.04em;
 }
 
+#exit:active{
+    background-color: gold;
+}

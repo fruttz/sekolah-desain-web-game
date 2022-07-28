@@ -4,8 +4,8 @@ window.addEventListener('load', function(){
     const ctx = game.getContext('2d');
     const menu = document.getElementById('menu');
     const gameOverUI = document.getElementById('gameoverUI');
-    const customFont = new FontFace('space', 'url(font/dendritic_voltage.ttf)');
-    customFont.load();
+    const gameFont = new FontFace('space', 'url(font/dendritic_voltage.ttf)');
+    gameFont.load();
     menu.style.width = "1024px";
     menu.style.height = "1024px";
     game.width = 768;
