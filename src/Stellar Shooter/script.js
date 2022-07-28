@@ -154,7 +154,7 @@ window.addEventListener('load', function(){
 
             //projectile collision
             for (var i = 0; i < projectiles.length; i++){
-                if (projectiles[i].x + projectiles[i].width >= this.x&&
+                if (projectiles[i].x + projectiles[i].width >= this.x &&
                     projectiles[i].x <= this.x + this.width &&
                     projectiles[i].y + projectiles[i].height >= this.y &&
                     projectiles[i].y <= this.y + this.height){

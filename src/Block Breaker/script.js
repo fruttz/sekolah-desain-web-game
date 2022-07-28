@@ -4,6 +4,9 @@ window.addEventListener('load', function(){
     const ctx = game.getContext('2d');
     const menu = document.getElementById('menu');
     const gameOverUI = document.getElementById('gameoverUI');
+    const winUI = document.getElementById('winUI');
+    const gameFont = new FontFace('ball', 'url(font/EmblemaOne-Regular.ttf)');
+    gameFont.load()
     menu.style.width = "1080px";
     menu.style.height = "1920px";
     game.width = 768;
@@ -28,6 +31,12 @@ window.addEventListener('load', function(){
     function hideGameOverUI(){
         gameOverUI.style.display = "none";
     }
+    function showWinUI(){
+        winUI.style.display = "block";
+    }
+    function hideWinUI(){
+        winUI.style.display = "none";
+    }
 
     //Main Menu
     const playButton = document.getElementById('play');
@@ -40,6 +49,22 @@ window.addEventListener('load', function(){
     quitButton.addEventListener('click', function(){
         close();
     });
+
+    //Win State
+    const winRestartButton = document.getElementById('winRestart');
+    const winExitButton = document.getElementById('winExit');
+    
+    winRestartButton.addEventListener('click', function(){
+        hideWinUI();
+        restartGame();
+    });
+    winExitButton.addEventListener('click', function(){
+        hideWinUI();
+        hideGameScreen();
+        showMainMenu();
+        restartGame();
+    });
+
 
     //Game Over
     const restartButton = document.getElementById('restart');
@@ -59,6 +84,7 @@ window.addEventListener('load', function(){
     //GAME ELEMENTS
     let gameInitialState = true;
     let gameOver = false;
+    let winState = false;
     let score = 0;
 
     //Player
@@ -204,15 +230,15 @@ window.addEventListener('load', function(){
     function displayText(context){
         //score text
         context.textAlign = "left";
-        context.fillStyle = "black";
-        context.font = "bold 20px Monsterrat";
-        context.fillText("Score: " + score, 20, 50);
+        context.fillStyle = "white";
+        context.font = "bold 30px ball";
+        context.fillText("Score: " + score, 20, game.height - 20);
 
         //initial game text
         if(gameInitialState){
             context.textAlign = "center";
-            context.fillStyle = "black";
-            context.font = "bold 30px Monsterrat";
+            context.fillStyle = "white";
+            context.font = "bold 30px ball";
             context.fillText("TOUCH ANYWHERE TO START", game.width/2, 200);
         }
     }
@@ -236,6 +262,7 @@ window.addEventListener('load', function(){
         }
         gameInitialState = true;
         gameOver = false;
+        winState = false;
         score = 0;
         animate();
     }
@@ -249,7 +276,9 @@ window.addEventListener('load', function(){
         displayText(ctx);
         brickCollisionDetection();
 
+        //ANIMATE
         if (!gameInitialState) {
+
             //ball boundaries
             if (ballX + ballSpeedX > game.width - ballRadius || ballX + ballSpeedX < ballRadius) ballSpeedX = -ballSpeedX;
             if (ballY + ballSpeedY < ballRadius) ballSpeedY = -ballSpeedY;
@@ -280,7 +309,16 @@ window.addEventListener('load', function(){
             brickTop += brickSpeed;
         }
 
-        if (!gameOver) requestAnimationFrame(animate);
+        //DETECT WIN CONDITION
+        if (score == (brickColumn * brickRow)) {
+            winState = true;
+            showWinUI();
+        }
+
+        //ANIMATE ONLY IF NOT GAME OVER OR WIN STATE
+        if (!gameOver && !winState) requestAnimationFrame(animate);
+
+        
     }
 
     animate();
