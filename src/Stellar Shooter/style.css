@@ -131,6 +131,7 @@ body{
 
 #restart{
     position: absolute;
+    cursor: pointer;
     top: 50%;
     left: 50%;
     margin-top: 5px;
@@ -148,6 +149,7 @@ body{
 
 #exit{
     position: relative;
+    cursor: pointer;
     top: 50%;
     left: 50%;
     font-family: space;

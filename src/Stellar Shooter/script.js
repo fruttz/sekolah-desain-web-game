@@ -64,6 +64,12 @@ window.addEventListener('load', function(){
     let gameOver = false;
     let score = 0
 
+    //Audio & SFX
+    const projectileHitSFX  = new Audio('audio/projectile_hit.ogg');
+    const asteroidExplosionSFX = new Audio('audio/asteroid_explosion.ogg');
+    const asteroidPassSFX = new Audio('audio/asteroid_pass.ogg');
+    const playerExplosionSFX = new Audio('audio/player_explosion.ogg')
+
 
     class Player {
         constructor(gameWidth, gameHeight){
@@ -75,6 +81,7 @@ window.addEventListener('load', function(){
             this.y = (this.gameHeight - this.height) - 50;
             this.image = document.getElementById('playerImage');
             this.speed = 0;
+            this.explosionSFX = playerExplosionSFX;
         }
         draw(context){
             context.drawImage(this.image, this.x, this.y, this.width, this.height)
@@ -109,6 +116,7 @@ window.addEventListener('load', function(){
             this.speed = 25;
             this.damage = 75;
             this.delete = false;
+            this.SFX = projectileHitSFX;
         }
         draw(context){
             context.fillStyle = "red";
@@ -121,7 +129,7 @@ window.addEventListener('load', function(){
             this.y -= this.speed;
 
             //delete after passing boundary
-            if (this.y < (-this.gameHeight + this.height)) this.delete = true;
+            if (this.y < -this.gameHeight + 10) this.delete = true;
 
         }
     }
@@ -137,8 +145,10 @@ window.addEventListener('load', function(){
             this.x = ((Math.random() * (this.gameWidth - this.width)));
             this.y = -this.height;
             this.image = document.getElementById("asteroidImage")
-            this.speed = 8;
+            this.speed = 5;
             this.delete = false;
+            this.explosionSFX = asteroidExplosionSFX;
+            this.passSFX = asteroidPassSFX;
         }
         draw(context){
             context.strokeStyle = "blue"
@@ -159,6 +169,7 @@ window.addEventListener('load', function(){
                     projectiles[i].y + projectiles[i].height >= this.y &&
                     projectiles[i].y <= this.y + this.height){
                         projectiles[i].delete = true;
+                        projectiles[i].SFX.play();
                         this.hitpoint -= projectiles[i].damage;
                         this.width = this.hitpoint;
                         this.height = this.hitpoint;
@@ -168,6 +179,8 @@ window.addEventListener('load', function(){
             //delete if hitpoint reaches 0
             if (this.hitpoint === 0) {
                 this.delete = true;
+                this.explosionSFX.volume = 0.3;
+                this.explosionSFX.play();
                 score += 10;
             }
             
@@ -176,12 +189,18 @@ window.addEventListener('load', function(){
             var playerY = player.y - this.y;
             var playerDistance = Math.sqrt(playerX**2 + playerY**2);
             if (playerDistance < player.width/4 + this.width/4) {
+                    player.explosionSFX.volume = 0.5;
+                    player.explosionSFX.play();
                     gameOver = true;
                 }
             
 
-            //delete after passing boundary
-            if (this.y > this.gameHeight + this.height) this.delete = true;
+            //delete after passing boundary and reduce score
+            if (this.y > this.gameHeight + this.height) {
+                score -= 30;
+                this.delete = true;
+                this.passSFX.play();
+            }
 
 
         }
@@ -276,7 +295,7 @@ window.addEventListener('load', function(){
 
     let projectiles = [];
     let projectileTimer = 0;
-    let projectileInterval = 150;
+    let projectileInterval = 300;
     function shootProjectiles(deltaTime) {
         if (projectileTimer > projectileInterval){
             projectiles.push(new Projectile(game.width, game.height, player));
@@ -358,6 +377,9 @@ window.addEventListener('load', function(){
         if (!gameInitialState) {
             shootProjectiles(deltaTime);
             spawnAsteroid(deltaTime);
+        }
+        if (score < 0) {
+            gameOver = true;
         }
         displayText(ctx);
         if (!gameOver) requestAnimationFrame(animate)
