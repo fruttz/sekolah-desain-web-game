@@ -38,6 +38,7 @@ window.addEventListener('load', function(){
     playButton.addEventListener('click', function(){
         hideMainMenu();
         showGameScreen();
+        bgm.play();
     });
     quitButton.addEventListener('click', function(){
         close();
@@ -56,6 +57,7 @@ window.addEventListener('load', function(){
         hideGameScreen();
         showMainMenu();
         restartGame();
+        bgm.pause();
     });
 
 
@@ -65,10 +67,13 @@ window.addEventListener('load', function(){
     let score = 0
 
     //Audio & SFX
+    const bgm = new Audio('audio/bg_music.ogg');
+    bgm.volume = 0.3;
     const projectileHitSFX  = new Audio('audio/projectile_hit.ogg');
     const asteroidExplosionSFX = new Audio('audio/asteroid_explosion.ogg');
     const asteroidPassSFX = new Audio('audio/asteroid_pass.ogg');
-    const playerExplosionSFX = new Audio('audio/player_explosion.ogg')
+    const playerExplosionSFX = new Audio('audio/player_explosion.ogg');
+    
 
 
     class Player {
@@ -191,6 +196,7 @@ window.addEventListener('load', function(){
             if (playerDistance < player.width/4 + this.width/4) {
                     player.explosionSFX.volume = 0.5;
                     player.explosionSFX.play();
+                    bgm.volume = 0.1;
                     gameOver = true;
                 }
             
@@ -356,6 +362,7 @@ window.addEventListener('load', function(){
         score = 0;
         gameInitialState = true;
         gameOver = false;
+        bgm.volume = 0.3;
         animate(0);
     }
 
@@ -379,6 +386,7 @@ window.addEventListener('load', function(){
             spawnAsteroid(deltaTime);
         }
         if (score < 0) {
+            bgm.volume = 0.1;
             gameOver = true;
         }
         displayText(ctx);

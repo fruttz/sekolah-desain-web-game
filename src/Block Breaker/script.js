@@ -45,6 +45,7 @@ window.addEventListener('load', function(){
     playButton.addEventListener('click', function(){
         hideMainMenu();
         showGameScreen();
+        bgm.play();
     });
     quitButton.addEventListener('click', function(){
         close();
@@ -63,6 +64,7 @@ window.addEventListener('load', function(){
         hideGameScreen();
         showMainMenu();
         restartGame();
+        bgm.pause();
     });
 
 
@@ -79,6 +81,7 @@ window.addEventListener('load', function(){
         hideGameScreen();
         showMainMenu();
         restartGame();
+        bgm.pause();
     });
 
     //GAME ELEMENTS
@@ -86,6 +89,11 @@ window.addEventListener('load', function(){
     let gameOver = false;
     let winState = false;
     let score = 0;
+
+    //Audio
+    const bgm = new Audio('audio/bg_music.ogg');
+    bgm.volume = 0.2;
+    const impactSFX = new Audio('audio/impact.ogg');
 
     //Player
     var playerHeight = 30;
@@ -153,6 +161,7 @@ window.addEventListener('load', function(){
                 var b = bricks[col][row];
                 //ball collision
                 if (b.delete == false && ballX > b.x && ballX < b.x + brickWidth && ballY > b.y && ballY < b.y + brickHeight){
+                    impactSFX.play();
                     ballSpeedY = -ballSpeedY;
                     b.delete = true;
                     score ++;
@@ -280,8 +289,14 @@ window.addEventListener('load', function(){
         if (!gameInitialState) {
 
             //ball boundaries
-            if (ballX + ballSpeedX > game.width - ballRadius || ballX + ballSpeedX < ballRadius) ballSpeedX = -ballSpeedX;
-            if (ballY + ballSpeedY < ballRadius) ballSpeedY = -ballSpeedY;
+            if (ballX + ballSpeedX > game.width - ballRadius || ballX + ballSpeedX < ballRadius) {
+                impactSFX.play();
+                ballSpeedX = -ballSpeedX;
+            }
+            if (ballY + ballSpeedY < ballRadius) {
+                impactSFX.play();
+                ballSpeedY = -ballSpeedY;
+            }
             else if (ballY + ballSpeedY > game.height + ballRadius) {
                 gameOver = true;
                 showGameOverUI();
@@ -303,7 +318,10 @@ window.addEventListener('load', function(){
             else if (playerX > game.width - playerWidth) playerX = game.width - playerWidth
 
             //player-ball collision
-            if (ballX + ballRadius > playerX && ballX < playerX + playerWidth && ballY + ballRadius > playerY && ballY < playerY + playerHeight) ballSpeedY = -ballSpeedY;
+            if (ballX + ballRadius > playerX && ballX < playerX + playerWidth && ballY + ballRadius > playerY && ballY < playerY + playerHeight) {
+                impactSFX.play();
+                ballSpeedY = -ballSpeedY;
+            }
 
             //update bricks
             brickTop += brickSpeed;

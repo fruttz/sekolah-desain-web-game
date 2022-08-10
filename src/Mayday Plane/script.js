@@ -38,6 +38,7 @@ window.addEventListener('load', function(){
     playButton.addEventListener('click', function(){
         hideMainMenu();
         showGameScreen();
+        bgm.play();
     });
     quitButton.addEventListener('click', function(){
         close();
@@ -56,6 +57,7 @@ window.addEventListener('load', function(){
         hideGameScreen();
         showMainMenu();
         restartGame();
+        bgm.pause();
     });
 
     //GAME ELEMENTS
@@ -63,7 +65,11 @@ window.addEventListener('load', function(){
     let score = 0;
     let gameInitialState = true;
     let gameOver = false;
-    
+
+    //Audio
+    const bgm = new Audio('audio/bg_music.ogg');
+    bgm.volume = 0.3;
+    const crashSFX = new Audio('audio/player_crash.ogg');
 
     const playerImage = new Image();
     playerImage.src = ("img/player.png");
@@ -97,8 +103,8 @@ window.addEventListener('load', function(){
             if (this.y < 0) this.y = 0;
             else if (this.y > this.gameHeight - this.height) {
                 this.y = this.gameHeight - this.height;
+                crashSFX.play();
                 gameOver = true;
-                showGameOverUI();
                 
             }
         }
@@ -152,7 +158,8 @@ window.addEventListener('load', function(){
                 (player.y + yOffset > this.gameHeight - this.bottom && 
                 player.y + player.height + yOffset < this.gameHeight))){
                     gameOver = true;
-                    showGameOverUI();
+                    crashSFX.play();
+                    bgm.volume = 0.1;
                 }
         }
     }
@@ -237,6 +244,10 @@ window.addEventListener('load', function(){
             context.font = "bold 30px plane";
             context.fillText("TOUCH ANYWHERE TO START", game.width/2, 200);
         }
+
+        if (gameOver) {
+            showGameOverUI();
+        }
     }
 
     function restartGame(){
@@ -245,6 +256,7 @@ window.addEventListener('load', function(){
         score = 0;
         gameInitialState = true;
         gameOver = false;
+        bgm.volume = 0.3;
         animate(0);
 
     }
@@ -262,13 +274,13 @@ window.addEventListener('load', function(){
         lastTime = timeStamp;
         gameContext.clearRect(0,0,game.width, game.height);
         background.draw(gameContext);
+        background.update();
         if (!gameInitialState) {
-            background.update();
             spawnObstacle(deltaTime);
         }
-        displayText(gameContext);
         player.draw(gameContext);
         player.update(input);
+        displayText(gameContext);
         if (!gameOver) requestAnimationFrame(animate);
 
     }
