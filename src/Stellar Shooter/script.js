@@ -39,6 +39,7 @@ window.addEventListener('load', function(){
         hideMainMenu();
         showGameScreen();
         bgm.play();
+        bgm.loop = true;
     });
     quitButton.addEventListener('click', function(){
         close();
